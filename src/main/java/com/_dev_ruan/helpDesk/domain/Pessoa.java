@@ -203,6 +203,18 @@ public abstract class Pessoa implements Serializable{
 	}
 
 
+    public Object getUsername() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getUsername'");
+    }
+
+
+    public Object getPassword() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getPassword'");
+    }
+
+
 	
 	
 	

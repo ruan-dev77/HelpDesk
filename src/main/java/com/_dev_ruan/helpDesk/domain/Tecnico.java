@@ -29,6 +29,8 @@ public class Tecnico extends Pessoa{
 		addPerfil(Perfil.TECNICO);
 	}
 
+	
+
 	public List<Chamado> getChamados() {
 		return chamados;
 	}

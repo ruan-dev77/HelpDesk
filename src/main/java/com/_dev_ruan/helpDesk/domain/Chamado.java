@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
 
+import com._dev_ruan.helpDesk.domain.dtos.ChamadoDTO;
 import com._dev_ruan.helpDesk.domain.enums.Prioridade;
 import com._dev_ruan.helpDesk.domain.enums.Status;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -48,6 +49,12 @@ public class Chamado implements Serializable {
 	protected String titulo;
 	
 	protected String observacoes;
+	
+	
+
+	public Chamado() {
+		super();
+	}
 
 	public Chamado(Integer id, Date dataAbertura, Date dataFechamentno, Prioridade prioridade, Status status,
 			String titulo, String observacoes) {
@@ -59,6 +66,19 @@ public class Chamado implements Serializable {
 		this.status = status;
 		this.titulo = titulo;
 		this.observacoes = observacoes;
+	}
+	
+	public static Chamado fromDTO(ChamadoDTO dto) {
+        Chamado obj = new Chamado(
+                dto.getId(),
+                dto.getDataAbertura(),
+                dto.getDataFechamento(),
+                dto.getPrioridade(),
+                dto.getStatus(),
+                dto.getTitulo(),
+                dto.getObservacoes()
+        );
+        return obj;
 	}
 
 	public Integer getId() {
@@ -83,6 +103,24 @@ public class Chamado implements Serializable {
 
 	public void setDataFechamentno(Date dataFechamentno) {
 		DataFechamentno = dataFechamentno;
+	}
+	
+	
+
+	public Cliente getCliente() {
+		return cliente;
+	}
+
+	public void setCliente(Cliente cliente) {
+		this.cliente = cliente;
+	}
+
+	public Tecnico getTecnico() {
+		return tecnico;
+	}
+
+	public void setTecnico(Tecnico tecnico) {
+		this.tecnico = tecnico;
 	}
 
 	public Prioridade getPrioridade() {
