@@ -36,10 +36,10 @@ public class Chamado implements Serializable {
     private Tecnico tecnico;
 	
 	@JsonFormat(pattern = "dd/MM/yyyy")
-	protected Date DataAbertura;
+	protected Date dataAbertura;
 	
 	@JsonFormat(pattern = "dd/MM/yyyy")
-	protected Date DataFechamentno;
+	protected Date dataFechamento;
 	
 	
 	protected Prioridade prioridade;
@@ -56,12 +56,12 @@ public class Chamado implements Serializable {
 		super();
 	}
 
-	public Chamado(Integer id, Date dataAbertura, Date dataFechamentno, Prioridade prioridade, Status status,
+	public Chamado(Integer id, Date dataAbertura, Date dataFechamento, Prioridade prioridade, Status status,
 			String titulo, String observacoes) {
 		super();
 		Id = id;
-		DataAbertura = dataAbertura;
-		DataFechamentno = dataFechamentno;
+		this.dataAbertura = dataAbertura;
+		this.dataFechamento = dataFechamento;
 		this.prioridade = prioridade;
 		this.status = status;
 		this.titulo = titulo;
@@ -90,19 +90,19 @@ public class Chamado implements Serializable {
 	}
 
 	public Date getDataAbertura() {
-		return DataAbertura;
+		return dataAbertura;
 	}
 
 	public void setDataAbertura(Date dataAbertura) {
-		DataAbertura = dataAbertura;
+		this.dataAbertura = dataAbertura;
 	}
 
-	public Date getDataFechamentno() {
-		return DataFechamentno;
+	public Date getDataFechamento() {
+		return dataFechamento;
 	}
 
-	public void setDataFechamentno(Date dataFechamentno) {
-		DataFechamentno = dataFechamentno;
+	public void setDataFechamento(Date dataFechamento) {
+		this.dataFechamento = dataFechamento;
 	}
 	
 	

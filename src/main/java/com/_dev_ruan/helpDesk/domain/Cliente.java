@@ -3,6 +3,7 @@ package com._dev_ruan.helpDesk.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import com._dev_ruan.helpDesk.domain.dtos.ClienteDTO;
 import com._dev_ruan.helpDesk.domain.enums.Perfil;
 
 import jakarta.persistence.Entity;
@@ -22,6 +23,18 @@ public Cliente() {
 super();
 addPerfil(Perfil.CLIENTE);
 }
+
+public Cliente(ClienteDTO obj) {
+        super();
+        this.id = obj.getId();
+        this.nome = obj.getNome();
+        this.cpf = obj.getCpf();
+        this.email = obj.getEmail();
+        this.senha = obj.getSenha();
+        this.perfis = obj.getPerfis(); // Atribuição direta, pois o DTO já converte
+        this.dataCriacao = obj.getDataCriacao();
+        addPerfil(Perfil.CLIENTE); // Garante que sempre tenha o perfil de técnico
+    }
 
 public Cliente(Integer id, String nome, String cpf, String email, String senha) {
 super(id, nome, cpf, email, senha);

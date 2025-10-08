@@ -2,115 +2,84 @@ package com._dev_ruan.helpDesk.services;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com._dev_ruan.helpDesk.domain.Pessoa;
 import com._dev_ruan.helpDesk.domain.Tecnico;
 import com._dev_ruan.helpDesk.domain.dtos.TecnicoDTO;
-import com._dev_ruan.helpDesk.domain.dtos.TecnicoUpdateDTO;
+import com._dev_ruan.helpDesk.repositories.PessoaRepository;
 import com._dev_ruan.helpDesk.repositories.TecnicoRepository;
 import com._dev_ruan.helpDesk.services.exceptions.DataIntegrityViolationException;
 import com._dev_ruan.helpDesk.services.exceptions.ObjectNotFoundException;
 
-import jakarta.validation.Valid;
+
 
 @Service
 public class TecnicoService {
-	
+
 	@Autowired
 	private TecnicoRepository repository;
 	
+	@Autowired
+	private PessoaRepository pessoaRepository;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 	
 	public Tecnico findById(Integer id) {
+		Optional<Tecnico> tecnico = repository.findById(id);
 		
-		Optional<Tecnico> obj = repository.findById(id);
-			
-		return obj.orElseThrow(() -> new ObjectNotFoundException("Objeto não encontrado! id: "+ id));
-}
-	
-	public List<TecnicoDTO> findAll() {
-		return repository.findAll()
-				.stream()
-				.map(TecnicoDTO::new)
-				.collect(Collectors.toList());
-		
-		
-	}
-	
-	public Tecnico createTecnico(TecnicoDTO objDTO) {
-		Tecnico obj = fromDTO(objDTO);
-			validarCPF(obj);
-			validarEmail(obj);
-		
-		
-		
-		return repository.save(obj);
-		}
-	
-	
-	public Tecnico updateTecnico(Integer id, @Valid TecnicoUpdateDTO objDTO) {
-	    Tecnico obj = findById(id);
-	    
-	    if (objDTO.getNome() != null) obj.setNome(objDTO.getNome());
-	    if (objDTO.getEmail() != null) obj.setEmail(objDTO.getEmail());
-	    if (objDTO.getCpf() != null) obj.setCpf(objDTO.getCpf());
-	    
-	    return repository.save(obj);
+		return tecnico.orElseThrow(() -> new ObjectNotFoundException("Objeto não encontrado na base de dados"));
 	}
 
+	public List<TecnicoDTO> findAll() {
+		List<Tecnico> list = repository.findAll();
+		
+		List<TecnicoDTO> listDTO = list.stream().map(x -> new TecnicoDTO(x)).toList();
+		
+		return listDTO;
+		
+	}
 	
+	public Tecnico create(TecnicoDTO objDTO) {
+		objDTO.setId(null);
+		objDTO.setSenha(passwordEncoder.encode(objDTO.getSenha()));
+		validaPorCpfEEmail(objDTO);
+		Tecnico newObj = new Tecnico(objDTO);
+		return repository.save(newObj);
+	}
+
+	public Tecnico update(Integer id, TecnicoDTO objDTO) {
+		objDTO.setId(id);
+		Tecnico oldObj = findById(id);
+		validaPorCpfEEmail(objDTO);
+		oldObj = new Tecnico(objDTO);
+		return repository.save(oldObj);
+	}
+
 	public void delete(Integer id) {
-		
-		Tecnico objDelete = repository.findById(id)
-				.orElseThrow(
-				() -> new ObjectNotFoundException("Objeto não encontrado para realizar a deleção"));
-		
-		if(objDelete.getChamados().size() > 0) {
-			throw new DataIntegrityViolationException("À chamados ligados a este tecnico. Não é possível realizar a deleção");
+		Tecnico obj = findById(id);
+
+		if (obj.getChamados().size() > 0) {
+			throw new DataIntegrityViolationException("Técnico possui chamados e não pode ser deletado!");
 		}
-		
-		repository.delete(objDelete);
-		
-		
-		
-	}
-		
-	
-	public Tecnico fromDTO(TecnicoDTO objDTO) {
-		Tecnico obj = new Tecnico(
-				null,
-				objDTO.getNome(),
-				objDTO.getCpf(),
-				objDTO.getEmail(),
-				null
-				);
-		
-		return obj;
+
+		repository.deleteById(id);
 	}
 	
-	public void validarCPF(Tecnico TecnicoOBJ) {
-		
-		
-		if(TecnicoOBJ.getCpf() == null || repository.existsByCpf(TecnicoOBJ.getCpf()))   {
-			
-			throw new DataIntegrityViolationException("CPF");
-			
-		}	
-	}
-	
-	public void validarEmail(Tecnico TecnicoOBJ) {
-		if(TecnicoOBJ.getEmail() == null || repository.existsByEmail(TecnicoOBJ.getEmail()))   {
-			throw new DataIntegrityViolationException("EMAIL");
-			
+	private void validaPorCpfEEmail(TecnicoDTO objDTO) {
+		Optional<Pessoa> obj = Optional.of(pessoaRepository.findByCpf(objDTO.getCpf()));
+		if (obj.isPresent() && obj.get().getId() != objDTO.getId()) {
+			throw new DataIntegrityViolationException("CPF já cadastrado no sistema!");
 		}
-	
+
+		obj = Optional.of(pessoaRepository.findByEmail(objDTO.getEmail()));
+		if (obj.isPresent() && obj.get().getId() != objDTO.getId()) {
+			throw new DataIntegrityViolationException("E-mail já cadastrado no sistema!");
+		}
 	}
-	
-	
-	
-	
-	
-	
+
 }

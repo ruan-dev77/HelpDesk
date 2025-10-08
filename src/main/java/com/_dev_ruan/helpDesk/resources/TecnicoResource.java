@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +18,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com._dev_ruan.helpDesk.domain.Tecnico;
 import com._dev_ruan.helpDesk.domain.dtos.TecnicoDTO;
-import com._dev_ruan.helpDesk.domain.dtos.TecnicoUpdateDTO;
+
 import com._dev_ruan.helpDesk.services.TecnicoService;
 
 
@@ -31,6 +32,7 @@ public class TecnicoResource {
 
 	
 	@GetMapping(value = "/{id}")
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	public ResponseEntity<TecnicoDTO> findById(@PathVariable Integer id) {
 
 		Tecnico obj = service.findById(id);
@@ -39,12 +41,14 @@ public class TecnicoResource {
 	}
 	
 	@GetMapping
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	public ResponseEntity<List<TecnicoDTO>> findAll(){
 		
 		return ResponseEntity.ok(service.findAll());
 	}
 	
 	@DeleteMapping(value = "/{id}")
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	public ResponseEntity<Void> delete(@PathVariable Integer id) {
 		
 		service.delete(id);
@@ -53,8 +57,9 @@ public class TecnicoResource {
 	}
 	
 	@PostMapping
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	public ResponseEntity<TecnicoDTO> createTecnico(@RequestBody TecnicoDTO objDTO) {
-		Tecnico obj = service.createTecnico(objDTO);
+		Tecnico obj = service.create(objDTO);
 		
 		TecnicoDTO objNew = new TecnicoDTO(obj);
 		
@@ -65,10 +70,11 @@ public class TecnicoResource {
 	}
 	
 	@PutMapping(value ="/{id}")
-	public ResponseEntity<TecnicoDTO> updateTecnico(@PathVariable Integer id,@RequestBody TecnicoUpdateDTO objDTO) {
-		Tecnico obj = service.updateTecnico(id, objDTO);
+	@PreAuthorize("hasAnyRole('ADMIN')")
+	public ResponseEntity<TecnicoDTO> updateTecnico(@PathVariable Integer id,@RequestBody TecnicoDTO objDTO) {
+		Tecnico obj = service.update(id, objDTO);
 		
-		service.updateTecnico(id, objDTO);
+		service.update(id, objDTO);
 		
 		return ResponseEntity.ok(new TecnicoDTO(obj));
 		

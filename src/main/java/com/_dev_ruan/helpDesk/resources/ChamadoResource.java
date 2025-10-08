@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +30,7 @@ public class ChamadoResource {
 	@Autowired 
 	private ChamadoService service;
 	
+	@PreAuthorize("hasAnyRole('ADMIN', 'TECNICO' , 'CLIENTE')")
 	@GetMapping
 	public ResponseEntity<List<ChamadoDTO>> findAll() {
 		List<Chamado> list = service.findAll();
@@ -38,7 +40,7 @@ public class ChamadoResource {
 		return ResponseEntity.ok().body(listDTO);
 		
 	}
-	
+	@PreAuthorize("hasAnyRole('ADMIN', 'TECNICO')")
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<ChamadoDTO> findById(@PathVariable Integer id) {
 		
@@ -50,15 +52,14 @@ public class ChamadoResource {
 	
 	
 	@PostMapping
-	public ResponseEntity<ChamadoDTO> createChamado(@Valid @RequestBody ChamadoDTO objDto){
-		Chamado objChamado = Chamado.fromDTO(objDto);
-		service.createChamado(objChamado);
-		
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(objChamado.getId()).toUri();
-		
+	@PreAuthorize("hasAnyRole('ADMIN')")
+	public ResponseEntity<ChamadoDTO> create(@Valid @RequestBody ChamadoDTO objDto){
+		Chamado obj = service.create(objDto);
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(obj.getId()).toUri();
 		return ResponseEntity.created(uri).build();
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
 		
@@ -69,15 +70,12 @@ public class ChamadoResource {
 	}
 	
 	
+	@PreAuthorize("hasAnyRole('ADMIN', 'TECNICO')")
 	@PutMapping("/{id}")
-	public ResponseEntity<ChamadoDTO> Update(@PathVariable Integer id ,@RequestBody ChamadoDTO objDto) {
+	public ResponseEntity<ChamadoDTO> update(@PathVariable Integer id , @Valid @RequestBody ChamadoDTO objDto) {
 		
-		Chamado obj = Chamado.fromDTO(objDto);
-		service.update(id, objDto);
-		return ResponseEntity.ok(new ChamadoDTO(obj));
+		Chamado newObj = service.update(id, objDto);
+		return ResponseEntity.ok().body(new ChamadoDTO(newObj));
 	}
-	
-	
-	
 
 }

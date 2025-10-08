@@ -2,14 +2,17 @@ package com._dev_ruan.helpDesk.services;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com._dev_ruan.helpDesk.domain.Pessoa;
 
 import com._dev_ruan.helpDesk.domain.Cliente;
 import com._dev_ruan.helpDesk.domain.dtos.ClienteDTO;
-import com._dev_ruan.helpDesk.domain.dtos.ClienteUpdateDTO;
+
+import com._dev_ruan.helpDesk.repositories.PessoaRepository;
 import com._dev_ruan.helpDesk.repositories.ClienteRepository;
 import com._dev_ruan.helpDesk.services.exceptions.DataIntegrityViolationException;
 import com._dev_ruan.helpDesk.services.exceptions.ObjectNotFoundException;
@@ -18,91 +21,60 @@ import jakarta.validation.Valid;
 
 @Service
 public class ClienteService {
-	
-	@Autowired
-	private ClienteRepository repository;
-	
-	public Cliente findById(Integer id) {
+
+    @Autowired
+    private ClienteRepository repository;
+    @Autowired
+    private PessoaRepository pessoaRepository;
+    @Autowired
+	private PasswordEncoder encoder;
+
+    public Cliente findById(Integer id) {
+        Optional<Cliente> obj = repository.findById(id);
+        return obj.orElseThrow(() -> new ObjectNotFoundException("Objeto não encontrado! Id: " + id));
+    }
+
+    public List<ClienteDTO> findAll() {
+        List<Cliente> list = repository.findAll();
 		
-		Optional<Cliente> obj = repository.findById(id);
-			
-		return obj.orElseThrow(() -> new ObjectNotFoundException("Objeto não encontrado! id: "+ id));
+		List<ClienteDTO> listDTO = list.stream().map(x -> new ClienteDTO(x)).toList();
+		
+		return listDTO;
+    }
+
+    public Cliente create(ClienteDTO objDTO) {
+        objDTO.setId(null);
+        objDTO.setSenha(encoder.encode(objDTO.getSenha()));
+        validaPorCpfEEmail(objDTO);
+        Cliente newObj = new Cliente(objDTO);
+        return repository.save(newObj);
+    }
+
+    public Cliente update(Integer id, @Valid ClienteDTO objDTO) {
+        objDTO.setId(id);
+        Cliente oldObj = findById(id);
+        validaPorCpfEEmail(objDTO);
+        oldObj = new Cliente(objDTO);
+        return repository.save(oldObj);
+    }
+
+    public void delete(Integer id) {
+        Cliente obj = findById(id);
+        if (obj.getChamados().size() > 0) {
+            throw new DataIntegrityViolationException("Cliente possui chamados e não pode ser deletado!");
+        }
+        repository.deleteById(id);
+    }
+
+    private void validaPorCpfEEmail(ClienteDTO objDTO) {
+        Optional<Pessoa> obj = Optional.of(pessoaRepository.findByCpf(objDTO.getCpf()));
+        if (obj.isPresent() && obj.get().getId() != objDTO.getId()) {
+            throw new DataIntegrityViolationException("CPF já cadastrado no sistema!");
+        }
+
+        obj = Optional.of(pessoaRepository.findByEmail(objDTO.getEmail()));
+        if (obj.isPresent() && obj.get().getId() != objDTO.getId()) {
+            throw new DataIntegrityViolationException("E-mail já cadastrado no sistema!");
+        }
+    }
 }
-	
-	public List<ClienteDTO> findAll() {
-		return repository.findAll()
-				.stream()
-				.map(ClienteDTO::new)
-				.collect(Collectors.toList());
-		
-		
-	}
-	
-	public Cliente createCliente(ClienteDTO objDTO) {
-		
-		Cliente obj = fromDTO(objDTO);
-		validarCPF(obj);
-		validarEmail(obj);
-	
-	
-	
-	return repository.save(obj);		
-		
-	}
-	
-	public Cliente updateCliente(Integer id, @Valid ClienteUpdateDTO objDTO) {
-	    Cliente obj = findById(id);
-	    
-	    if (objDTO.getNome() != null) obj.setNome(objDTO.getNome());
-	    if (objDTO.getEmail() != null) obj.setEmail(objDTO.getEmail());
-	    if (objDTO.getCpf() != null) obj.setCpf(objDTO.getCpf());
-	    
-	    return repository.save(obj);
-	}
-	
-	public void delete(Integer id) {
-		
-		Cliente objDelete = repository.findById(id)
-				.orElseThrow(
-				() -> new ObjectNotFoundException("Objeto não encontrado para realizar a deleção"));
-		
-		if(objDelete.getChamados().size() > 0) {
-			throw new DataIntegrityViolationException("À chamados ligados a este tecnico. Não é possível realizar a deleção");
-		}
-		
-		repository.delete(objDelete);
-		
-		
-		
-	}
-	
-	public Cliente fromDTO(ClienteDTO objDTO) {
-		Cliente obj = new Cliente(
-				null,
-				objDTO.getNome(),
-				objDTO.getCpf(),
-				objDTO.getEmail(),
-				null
-				);
-		
-		return obj;
-	}
-	
-public void validarCPF(Cliente ClienteOBJ) {
-		
-		
-		if(ClienteOBJ.getCpf() == null || repository.existsByCpf(ClienteOBJ.getCpf()))   {
-			
-			throw new DataIntegrityViolationException("CPF");
-			
-		}	
-	}
-	
-	public void validarEmail(Cliente ClienteOBJ) {
-		if(ClienteOBJ.getEmail() == null || repository.existsByEmail(ClienteOBJ.getEmail()))   {
-			throw new DataIntegrityViolationException("EMAIL");
-			
-		}
-	
-	
-	}}

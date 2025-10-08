@@ -1,7 +1,5 @@
 package com._dev_ruan.helpDesk.domain.dtos;
 
-
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -10,41 +8,52 @@ import java.util.stream.Collectors;
 import com._dev_ruan.helpDesk.domain.Tecnico;
 import com._dev_ruan.helpDesk.domain.enums.Perfil;
 
-public class TecnicoDTO implements Serializable {
-    private static final long serialVersionUID = 1L;
+import jakarta.validation.constraints.NotNull;
+
+public class TecnicoDTO {
+
+    protected Integer id;
     
-    private Integer Id;
-    private String nome;
-    private String cpf;
-    private String email;
-    private Set<Integer> perfis = new HashSet<>();
-    private LocalDate dataCriacao;
+    @NotNull(message = "O campo nome é requerido")
+    protected String nome;
+    
+    @NotNull(message = "O campo CPF é requerido")
+    protected String cpf;
+    
+    @NotNull(message = "O campo email é requerido")
+    protected String email;
+    
+    @NotNull(message = "O campo senha é requerido")
+    protected String senha;
+
+    protected Set<Integer> perfis = new HashSet<>();
+    
+    protected LocalDate dataCriacao = LocalDate.now();
 
     public TecnicoDTO() {
-        super();
+        addPerfil(Perfil.TECNICO);
     }
 
     public TecnicoDTO(Tecnico obj) {
-    	this.Id = obj.getId();
+        this.id = obj.getId();
         this.nome = obj.getNome();
         this.cpf = obj.getCpf();
         this.email = obj.getEmail();
-        this.perfis = obj.getPerfis().stream().map(Perfil::getCodigo).collect(Collectors.toSet());
+        this.senha = obj.getSenha();
+        this.perfis = obj.getPerfis().stream().map(x -> x.getCodigo()).collect(Collectors.toSet());
         this.dataCriacao = obj.getDataCriacao();
+        addPerfil(Perfil.TECNICO);
     }
-    
-
-    
 
     public Integer getId() {
-		return Id;
-	}
+        return id;
+    }
 
-	public void setId(Integer id) {
-		Id = id;
-	}
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-	public String getNome() {
+    public String getNome() {
         return nome;
     }
 
@@ -68,12 +77,20 @@ public class TecnicoDTO implements Serializable {
         this.email = email;
     }
 
-    public Set<Integer> getPerfis() {
-        return perfis;
+    public String getSenha() {
+        return senha;
     }
 
-    public void setPerfis(Set<Integer> perfis) {
-        this.perfis = perfis;
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+
+    public Set<Perfil> getPerfis() {
+        return perfis.stream().map(x -> Perfil.toEnum(x)).collect(Collectors.toSet());
+    }
+
+    public void addPerfil(Perfil perfil) {
+        this.perfis.add(perfil.getCodigo());
     }
 
     public LocalDate getDataCriacao() {
@@ -84,4 +101,3 @@ public class TecnicoDTO implements Serializable {
         this.dataCriacao = dataCriacao;
     }
 }
-

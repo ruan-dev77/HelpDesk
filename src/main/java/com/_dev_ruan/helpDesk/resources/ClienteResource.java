@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,10 +18,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com._dev_ruan.helpDesk.domain.Cliente;
 import com._dev_ruan.helpDesk.domain.dtos.ClienteDTO;
-import com._dev_ruan.helpDesk.domain.dtos.ClienteUpdateDTO;
 import com._dev_ruan.helpDesk.services.ClienteService;
 
-@RequestMapping(value = "/Clientes")
+@RequestMapping(value = "/clientes")
 @RestController
 public class ClienteResource {
 	@Autowired
@@ -28,6 +28,7 @@ public class ClienteResource {
 
 	
 	@GetMapping(value = "/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<ClienteDTO> findById(@PathVariable Integer id) {
 
 		Cliente obj = service.findById(id);
@@ -36,12 +37,14 @@ public class ClienteResource {
 	}
 	
 	@GetMapping
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	public ResponseEntity<List<ClienteDTO>> findAll(){
 		
 		return ResponseEntity.ok(service.findAll());
 	}
 	
 	@DeleteMapping(value = "/{id}")
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	public ResponseEntity<Void> delete(@PathVariable Integer id) {
 		
 		service.delete(id);
@@ -50,8 +53,9 @@ public class ClienteResource {
 	}
 	
 	@PostMapping
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<ClienteDTO> createCliente(@RequestBody ClienteDTO objDTO) {
-		Cliente obj = service.createCliente(objDTO);
+		Cliente obj = service.create(objDTO);
 		
 		ClienteDTO objNew = new ClienteDTO(obj);
 		
@@ -62,10 +66,11 @@ public class ClienteResource {
 	}
 	
 	@PutMapping(value ="/{id}")
-	public ResponseEntity<ClienteDTO> updateCliente(@PathVariable Integer id,@RequestBody ClienteUpdateDTO objDTO) {
-		Cliente obj = service.updateCliente(id, objDTO);
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<ClienteDTO> updateCliente(@PathVariable Integer id,@RequestBody ClienteDTO objDTO) {
+		Cliente obj = service.update(id, objDTO);
 		
-		service.updateCliente(id, objDTO);
+		service.update(id, objDTO);
 		
 		return ResponseEntity.ok(new ClienteDTO(obj));
 		

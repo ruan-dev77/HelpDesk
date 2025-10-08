@@ -4,7 +4,7 @@ public enum Prioridade {
 	
 	BAIXA(1,"PRIO_BAIXA"),
 	
-	MEDIA(2,"PRIO_MEIDA"),
+	MEDIA(2,"PRIO_MEDIA"),
 	
 	ALTA(3, "PRIO_ALTA");
 	
@@ -38,9 +38,7 @@ public enum Prioridade {
 			}
 		}
 		
-		/*
-		 * Esta exceção trata de argumentos ilegais.
-		 */
+		
 		throw new IllegalArgumentException("Perfil Inválido");
 	}
 	

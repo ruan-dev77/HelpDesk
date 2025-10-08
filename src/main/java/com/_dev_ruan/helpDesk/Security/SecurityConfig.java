@@ -6,7 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
@@ -15,32 +16,22 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
-    private static final String[] PUBLIC_MATCHES = { "/h2-console/**" };
+    private static final String[] PUBLIC_MATCHES = { "/h2-console/**", "/auth/**" };
 
     private final UserDetailsService userDetailsService;
     private final JWTUtil jwtUtil;
-    private final Environment env; // Para verificar profiles ativos
+    private final Environment env;
 
     public SecurityConfig(UserDetailsService userDetailsService, JWTUtil jwtUtil, Environment env) {
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
         this.env = env;
-    }
-
-    @SuppressWarnings("removal")
-    @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
-                   .userDetailsService(userDetailsService)
-                   .passwordEncoder(passwordEncoder())
-                   .and()
-                   .build();
     }
 
     @Bean
@@ -49,30 +40,25 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JWTAuthenticationFilter jwtAuthenticationFilter(AuthenticationManager authManager) {
-        JWTAuthenticationFilter filter = new JWTAuthenticationFilter(authManager, jwtUtil);
-        filter.setAuthenticationManager(authManager);
-        return filter;
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   JWTAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
 
-        // CSRF desabilitado e H2 liberado
-        http.csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/auth/**").permitAll()
-                    .requestMatchers(PUBLIC_MATCHES).permitAll()
-                    .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
-        // Se o profile "test" estiver ativo, libera frames para H2
         if (Arrays.asList(env.getActiveProfiles()).contains("test")) {
             http.headers(headers -> headers.frameOptions(FrameOptionsConfig::disable));
         }
+
+        http.csrf(csrf -> csrf.disable())
+            .addFilter(new JWTAuthenticationFilter(authenticationManager, jwtUtil))
+            .addFilter(new JWTAuthorizationFilter(authenticationManager, jwtUtil, userDetailsService))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        
+        http.authorizeHttpRequests(auth -> auth
+            .requestMatchers(PUBLIC_MATCHES).permitAll()
+            .anyRequest().authenticated());
 
         return http.build();
     }

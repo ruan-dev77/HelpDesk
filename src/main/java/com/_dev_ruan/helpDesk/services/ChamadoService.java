@@ -7,8 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com._dev_ruan.helpDesk.domain.Chamado;
+import com._dev_ruan.helpDesk.domain.Cliente;
+import com._dev_ruan.helpDesk.domain.Tecnico;
 import com._dev_ruan.helpDesk.domain.dtos.ChamadoDTO;
 import com._dev_ruan.helpDesk.repositories.ChamadoRepository;
+import com._dev_ruan.helpDesk.repositories.ClienteRepository;
+import com._dev_ruan.helpDesk.repositories.TecnicoRepository;
 import com._dev_ruan.helpDesk.services.exceptions.ObjectNotFoundException;
 
 @Service
@@ -16,6 +20,10 @@ public class ChamadoService {
 	
 	@Autowired
 	private ChamadoRepository repository;
+	@Autowired
+	private TecnicoRepository tecnicoRepository;
+	@Autowired
+	private ClienteRepository clienteRepository;
 	
 		
 	public Chamado findById(Integer id) {
@@ -28,9 +36,9 @@ public class ChamadoService {
 		return repository.findAll();
 	}
 	
-	public Chamado createChamado(Chamado chm) {
-		return repository.save(chm);
-	}
+	public Chamado create(ChamadoDTO objDTO) {
+        return repository.save(fromDTO(objDTO));
+    }
 	
 	public void delete(Integer id) {
         Chamado obj = repository.findById(id)
@@ -39,16 +47,25 @@ public class ChamadoService {
     }
 	
 	public Chamado update(Integer id , ChamadoDTO objDto) {
-		Chamado obj = repository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Chamado não encontrado! Id:" + id));
-		
-		
-		 obj.setTitulo(objDto.getTitulo());
-	        obj.setObservacoes(objDto.getObservacoes());
-	        obj.setStatus(objDto.getStatus());
-	        obj.setPrioridade(objDto.getPrioridade());
-	        obj.setDataFechamentno(objDto.getDataFechamento());
+		objDto.setId(id);
+		Chamado oldObj = findById(id);
+		oldObj = fromDTO(objDto);
+		return repository.save(oldObj);
+	}
 
-	        return repository.save(obj);
-		
+	public Chamado fromDTO(ChamadoDTO obj) {
+		Chamado newObj = new Chamado();
+		newObj.setId(obj.getId());
+		newObj.setPrioridade(obj.getPrioridade());
+		newObj.setStatus(obj.getStatus());
+		newObj.setTitulo(obj.getTitulo());
+		newObj.setObservacoes(obj.getObservacoes());
+
+		Tecnico tec = tecnicoRepository.findById(obj.getTecnico()).orElseThrow(() -> new ObjectNotFoundException("Técnico não encontrado! Id: " + obj.getTecnico()));
+		Cliente cli = clienteRepository.findById(obj.getCliente()).orElseThrow(() -> new ObjectNotFoundException("Cliente não encontrado! Id: " + obj.getCliente()));
+
+		newObj.setTecnico(tec);
+		newObj.setCliente(cli);
+		return newObj;
 	}
 }
