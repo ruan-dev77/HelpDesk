@@ -31,9 +31,9 @@ public Cliente(ClienteDTO obj) {
         this.cpf = obj.getCpf();
         this.email = obj.getEmail();
         this.senha = obj.getSenha();
-        this.perfis = obj.getPerfis(); // Atribuição direta, pois o DTO já converte
+        this.perfis = obj.getPerfis(); 
         this.dataCriacao = obj.getDataCriacao();
-        addPerfil(Perfil.CLIENTE); // Garante que sempre tenha o perfil de técnico
+        addPerfil(Perfil.CLIENTE);
     }
 
 public Cliente(Integer id, String nome, String cpf, String email, String senha) {

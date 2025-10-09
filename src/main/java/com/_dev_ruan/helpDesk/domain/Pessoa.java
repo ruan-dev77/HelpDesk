@@ -40,7 +40,7 @@ public abstract class Pessoa implements Serializable {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "PERFIS")
-    @Enumerated(EnumType.ORDINAL) // Store the enum by its integer value (0, 1, 2)
+    @Enumerated(EnumType.ORDINAL)
     protected Set<Perfil> perfis = new HashSet<>();
 
     @JsonFormat(pattern = "dd/MM/yyyy")
@@ -117,7 +117,7 @@ public abstract class Pessoa implements Serializable {
         this.dataCriacao = dataCriacao;
     }
 
-    // hashCode and equals methods remain the same
+    
 
     @Override
     public int hashCode() {

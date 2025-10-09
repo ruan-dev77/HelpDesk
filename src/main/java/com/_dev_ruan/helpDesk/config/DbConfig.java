@@ -41,11 +41,11 @@ public class DbConfig implements CommandLineRunner {
         
         Tecnico tec1 = new Tecnico(null, "Maria Souza", "12345678901", "maria@helpdesk.com", encript.passwordEncoder().encode("123"));
         
-        Tecnico tec2 = new Tecnico(null, "Mara Souza", "12345478901", "mara@helpdesk.com", encript.passwordEncoder().encode("123"));
+        Tecnico tec2 = new Tecnico(null, "Mara Souza", "123454754201", "mara@helpdesk.com", encript.passwordEncoder().encode("123"));
         
         Cliente cli1 = new Cliente(null, "João Silva", "11122233344", "joao@gmail.com", encript.passwordEncoder().encode("123"));
 
-        // Novo usuário com perfil TECNICO e ADMIN
+        
         Tecnico tecAdmin = new Tecnico(null, "Admin Ruan", "01987654321", "admin", encript.passwordEncoder().encode("admin"));
         tecAdmin.addPerfil(Perfil.ADMIN);
 
