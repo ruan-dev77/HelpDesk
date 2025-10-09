@@ -55,11 +55,14 @@ public class ChamadoResource {
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	public ResponseEntity<ChamadoDTO> create(@Valid @RequestBody ChamadoDTO objDto){
 		Chamado obj = service.create(objDto);
+
+		ChamadoDTO dto = new ChamadoDTO(obj);
+
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(obj.getId()).toUri();
-		return ResponseEntity.created(uri).build();
+		return ResponseEntity.created(uri).body(dto);
 	}
 	
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
 		

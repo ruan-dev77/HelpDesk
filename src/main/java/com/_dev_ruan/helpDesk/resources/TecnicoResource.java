@@ -76,7 +76,7 @@ public class TecnicoResource {
 		
 		service.update(id, objDTO);
 		
-		return ResponseEntity.ok(new TecnicoDTO(obj));
+		return ResponseEntity.ok().body(new TecnicoDTO(obj));
 		
 		
 	}

@@ -1,5 +1,6 @@
 package com._dev_ruan.helpDesk.services;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +38,8 @@ public class ChamadoService {
 	}
 	
 	public Chamado create(ChamadoDTO objDTO) {
+		objDTO.setId(null);
+		objDTO.setDataAbertura(new Date(System.currentTimeMillis()));
         return repository.save(fromDTO(objDTO));
     }
 	

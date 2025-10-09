@@ -2,6 +2,8 @@ package com._dev_ruan.helpDesk.resources.exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -9,9 +11,6 @@ import com._dev_ruan.helpDesk.services.exceptions.DataIntegrityViolationExceptio
 import com._dev_ruan.helpDesk.services.exceptions.ObjectNotFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
-
-
-
 
 @ControllerAdvice
 public class ResourceExceptionHandle {
@@ -38,8 +37,8 @@ public class ResourceExceptionHandle {
 			
 		
 		ValidationError error = new ValidationError (System.currentTimeMillis(),
-				HttpStatus.NOT_FOUND.value(),
-				"Integrity Data Violity",
+				HttpStatus.CONFLICT.value(),
+				"Violação de dados",
 				ex.getMessage(),
 				request.getRequestURI());
 		
@@ -55,5 +54,17 @@ public class ResourceExceptionHandle {
 		
 	}
 	
-	
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ValidationError> validationErrors(MethodArgumentNotValidException ex,
+			HttpServletRequest request) {
+		
+		ValidationError error = new ValidationError(System.currentTimeMillis(), HttpStatus.BAD_REQUEST.value(),
+				"Erro de Validação", "Erro na validação dos campos", request.getRequestURI());
+
+		for (FieldError x : ex.getBindingResult().getFieldErrors()) {
+			error.addErrors(x.getField(), x.getDefaultMessage());
+		}
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+	}
 }

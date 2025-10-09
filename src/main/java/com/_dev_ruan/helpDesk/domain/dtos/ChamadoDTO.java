@@ -49,7 +49,7 @@ public class ChamadoDTO implements Serializable {
 
     public ChamadoDTO(Chamado obj) {
         this.id = obj.getId();
-        this.dataAbertura = obj.getDataAbertura();
+        this.dataAbertura = new Date(System.currentTimeMillis());
         this.dataFechamento = obj.getDataFechamento();
         this.prioridade = obj.getPrioridade();
         this.status = obj.getStatus();

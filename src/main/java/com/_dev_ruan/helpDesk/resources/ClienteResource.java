@@ -72,7 +72,7 @@ public class ClienteResource {
 		
 		service.update(id, objDTO);
 		
-		return ResponseEntity.ok(new ClienteDTO(obj));
+		return ResponseEntity.ok().body(new ClienteDTO(obj));
 		
 		
 	}
