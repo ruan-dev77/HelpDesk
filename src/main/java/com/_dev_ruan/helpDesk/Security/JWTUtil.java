@@ -9,9 +9,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
-/**
- * Utilitário atualizado para operações com JWT usando JJWT 0.11.x
- */
+
 @Component
 public class JWTUtil {
 
@@ -19,11 +17,9 @@ public class JWTUtil {
     private Long expiration;
 
     @Value("${jwt.secret}")
-    private String secret; // Pode ser um Base64 seguro
+    private String secret; 
 
-    /**
-     * Gera um token JWT para o e-mail do usuário.
-     */
+    
     @SuppressWarnings("deprecation")
 	public String generateToken(String email) {
         Date now = new Date();
@@ -37,9 +33,7 @@ public class JWTUtil {
                    .compact();
     }
 
-    /**
-     * Valida se o token é válido.
-     */
+   
     public boolean tokenValido(String token) {
         Claims claims = getClaims(token);
         if (claims == null) return false;
@@ -51,17 +45,13 @@ public class JWTUtil {
         return username != null && expirationDate != null && now.before(expirationDate);
     }
 
-    /**
-     * Extrai o username (subject) do token.
-     */
+   
     public String getUsername(String token) {
         Claims claims = getClaims(token);
         return claims != null ? claims.getSubject() : null;
     }
 
-    /**
-     * Obtém as claims do token.
-     */
+
     private Claims getClaims(String token) {
         try {
             return Jwts.parserBuilder()
